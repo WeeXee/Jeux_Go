@@ -71,6 +71,9 @@ class Board:
     
     def getSize(self):
         return self.size
+    
+    def set(self,x,y,player):
+        self.board[x][y] = player
 
 class Go:
     def __init__(self,size,windowSize):
@@ -82,12 +85,18 @@ class Go:
 
     def addPlayer(self,player):
         self.players.append(player)
+        return self
 
     def mainLoop(self):
         self.window.mainLoop()
 
     def start(self):
+        if len(self.players) < 2:
+            return
+        elif len(self.players) > 2:
+            return
         self.window.getCanvas().bind("<Button-1>", self.callback)
+        self.player = self.players[0]
         self.window.mainLoop()
 
     def callback(self,event):
@@ -95,7 +104,9 @@ class Go:
             for y in range(self.board.getSize()):
                 if self.window.getGrid(x,y)[0] - 20 <= event.x <= self.window.getGrid(x,y)[0] + 20 and self.window.getGrid(x,y)[1] - 20 <= event.y <= self.window.getGrid(x,y)[1] + 20:
                     print(f"clicked at ({x},{y})")
+                    self.board.set(x,y,self.player)
+                    self.window.getCanvas().create_oval(self.window.getGrid(x,y)[0] - 20, self.window.getGrid(x,y)[1] - 20, self.window.getGrid(x,y)[0] + 20, self.window.getGrid(x,y)[1] + 20, fill=self.player.color)
 
 if __name__ == "__main__":
     go = Go(size=9,windowSize=800)
-    go.start()
+    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
