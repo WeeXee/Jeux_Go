@@ -1,6 +1,8 @@
 import tkinter as tk
 import numpy as np
 
+offset = 20
+
 class Player:
     def __init__(self, name, color):
         self.name = name
@@ -57,11 +59,91 @@ class Window:
             for j in range(size-1):
                 self.position[i][j] = ((w/size)*(i+1)), ((h/size)*(j+1))
 
+class Stone:
+    def __init__(self, board ,player, x,y):
+        self.position = (x,y)
+        self.player = player
+        self.board = board
+        self.group = self.findGroup()
+
+    def remove(self):
+        self.group.stones.remove(self)
+        self.board.set(self.position[0],self.position[1],0)
+        del self
+
+    @property
+    def neighbors(self):
+        neighboring = [(self.position[0] - 1, self.position[1]),
+                       (self.position[0] + 1, self.position[1]),
+                       (self.position[0], self.position[1] - 1),
+                       (self.position[0], self.position[1] + 1)]
+        for position in neighboring:
+            if not (0 <= position[0] < 9 and 0 <= position[1] < 9):
+                neighboring.remove(position)
+        for position in neighboring:
+            if not (0 <= position[0] < 9 and 0 <= position[1] < 9):
+                neighboring.remove(position)
+        return neighboring
+    
+    @property
+    def liberties(self):
+        liberties = self.neighbors
+        stones = self.board.search(points=self.neighbors)
+        for stone in stones:
+            liberties.remove(stone.position)
+        return liberties
+
+    def findGroup(self):
+        groups = []
+        print(self.board.search(points=self.neighbors))
+        for stone in self.board.search(points=self.neighbors):
+            if stone.player == self.player and stone.group not in groups:
+                groups.append(stone.group)
+        if not groups:
+            group = Group(self.board,self.player,self)
+            return group
+        else: 
+            if len(groups) > 1:
+                for group in groups[1:]:
+                    groups[0].merge(group)
+            groups[0].stones.append(self)
+            return groups[0]
+
+class Group:
+    def __init__(self, board, player, stone):
+        self.player = player
+        self.stones = [stone]
+        self.liberties = None
+        self.board = board
+        self.board.groups.append(self)
+
+    def merge(self, group):
+        for stone in group.stones:
+            stone.group = self
+            self.stones.append(stone)
+        self.board.groups.remove(group)
+        del group
+
+    def remove(self):
+        while self.stones:
+            self.stones[0].remove()
+        self.board.groups.remove(self)
+        del self
+
+    def updateLiberties(self):
+        liberties = []
+        for stone in self.stones:
+            for liberty in stone.liberties:
+                liberties.append(liberty)
+        self.liberties = set(liberties)
+        if len(self.liberties) == 0:
+            self.remove()
 
 class Board:
     def __init__(self,size):
         self.size = size
-        self.board = [[None] * size ] * size
+        self.board = np.zeros((size,size),dtype=object)
+        self.groups = []
 
     def get(self,x,y):
         return self.board[x][y]
@@ -74,7 +156,27 @@ class Board:
     
     def set(self,x,y,player):
         self.board[x][y] = player
-
+        return self
+    
+    def search(self,points=[],point=None):
+        if point != None:
+            points.append(point)
+        stones = []
+        for point in points:
+            if self.get(point[0],point[1]) != 0:
+                stones.append(self.get(point[0],point[1]))
+        return stones
+    
+    def updateLiberties(self,newStone=None):
+        print(newStone.group)
+        for group in self.groups:
+            if newStone:
+                if group == newStone.group:
+                    continue
+            group.updateLiberties()
+        if newStone:
+            newStone.group.updateLiberties()
+    
 class Go:
     def __init__(self,size,windowSize):
         self.players = []
@@ -97,15 +199,39 @@ class Go:
             return
         self.window.getCanvas().bind("<Button-1>", self.callback)
         self.player = self.players[0]
-        self.window.mainLoop()
+        self.mainLoop()
+
+    def round(self,x,y):
+        if self.board.get(x,y) != 0:
+            self.board.get(x,y).remove()
+        self.board.set(x,y,Stone(self.board,self.player,x,y))
+        self.board.updateLiberties(self.board.get(x,y))
+        print(self.board.get(x,y).group.liberties)
+        self.drawBoard()
+        self.player = self.players[1] if self.player == self.players[0] else self.players[0]
+        return self
+
+    def drawBoard(self):
+        for x in range(self.board.getSize()):
+            for y in range(self.board.getSize()):
+                if self.board.get(x,y) != 0:
+                    player = self.board.get(x,y).player
+                    grid = self.window.getGrid(x,y)
+                    canva = self.window.getCanvas()
+                    canva.create_oval(grid[0]-offset,grid[1]-offset,grid[0]+offset,grid[1]+offset,fill=player.color,tag=f"stone{x}{y}")
+                else:
+                    grid = self.window.getGrid(x,y)
+                    canva = self.window.getCanvas()
+                    canva.delete(f"stone{x}{y}")
+        return self
 
     def callback(self,event):
         for x in range(self.board.getSize()):
             for y in range(self.board.getSize()):
-                if self.window.getGrid(x,y)[0] - 20 <= event.x <= self.window.getGrid(x,y)[0] + 20 and self.window.getGrid(x,y)[1] - 20 <= event.y <= self.window.getGrid(x,y)[1] + 20:
-                    print(f"clicked at ({x},{y})")
-                    self.board.set(x,y,self.player)
-                    self.window.getCanvas().create_oval(self.window.getGrid(x,y)[0] - 20, self.window.getGrid(x,y)[1] - 20, self.window.getGrid(x,y)[0] + 20, self.window.getGrid(x,y)[1] + 20, fill=self.player.color)
+                grid = self.window.getGrid(x,y)
+                if grid[0]-offset <= event.x <= grid[0]+offset and grid[1]-offset <= event.y <= grid[1]+offset:
+                    self.round(x,y)
+                    return
 
 if __name__ == "__main__":
     go = Go(size=9,windowSize=800)
