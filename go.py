@@ -78,10 +78,10 @@ class Stone:
                        (self.position[0], self.position[1] - 1),
                        (self.position[0], self.position[1] + 1)]
         for position in neighboring:
-            if not (0 <= position[0] < 9 and 0 <= position[1] < 9):
+            if not (0 <= position[0] < self.board.size and 0 <= position[1] < self.board.size):
                 neighboring.remove(position)
         for position in neighboring:
-            if not (0 <= position[0] < 9 and 0 <= position[1] < 9):
+            if not (0 <= position[0] < self.board.size and 0 <= position[1] < self.board.size):
                 neighboring.remove(position)
         return neighboring
     
@@ -95,7 +95,6 @@ class Stone:
 
     def findGroup(self):
         groups = []
-        print(self.board.search(points=self.neighbors))
         for stone in self.board.search(points=self.neighbors):
             if stone.player == self.player and stone.group not in groups:
                 groups.append(stone.group)
@@ -168,7 +167,6 @@ class Board:
         return stones
     
     def updateLiberties(self,newStone=None):
-        print(newStone.group)
         for group in self.groups:
             if newStone:
                 if group == newStone.group:
@@ -206,7 +204,6 @@ class Go:
             self.board.get(x,y).remove()
         self.board.set(x,y,Stone(self.board,self.player,x,y))
         self.board.updateLiberties(self.board.get(x,y))
-        print(self.board.get(x,y).group.liberties)
         self.drawBoard()
         self.player = self.players[1] if self.player == self.players[0] else self.players[0]
         return self
