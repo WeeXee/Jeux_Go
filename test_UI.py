@@ -9,35 +9,50 @@ class Player:
         self.color = color
         self.score = 0
 
+class MainMenu:
+    def __init__(self,mainWindow):
+        self.window = tk.Tk()
+        self.window.title("Main Menu")
+        self.menubar = tk.Menu(self.window)
+        self.mainWindow = mainWindow
+
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.filemenu.add_command(label="Quit", command=self.window.quit)
+        self.menubar.add_cascade(label="File", menu=self.filemenu)
+
+        self.window.config(menu=self.menubar)
+        self.title = tk.Label(self.window, text="Main Menu", font=("Helvetica", 24))
+        self.title.pack(pady=10)
+        self.start_button = tk.Button(self.window, text="Start Game", command=self.start_game)
+        self.start_button.pack()
+
+    def start_game(self):
+        self.mainWindow.getWindow().deiconify()
+
+    def run(self):
+        self.window.mainloop()
+
 class Window:
-    def __init__(self, size,width, height,title):
+    def __init__(self, size, width, height, title):
         self.size = size
         self.position = np.zeros((size,size),dtype=[('x',int),('y',int)]) # x: vertical | y: horizontal
-
         self.window = tk.Tk()
         self.window.title(title)
+        self.menubar = tk.Menu(self.window)
+        self.filemenu = tk.Menu(self.menubar, tearoff=0)
 
-        self.canvas = tk.Canvas(self.window, width=width, height=height, bg="white")
+        self.filemenu.add_command(label="Quit", command=self.window.quit)
+        self.menubar.add_cascade(label="Options", menu=self.filemenu)
+        self.menubar.add_cascade(label="Player", menu=self.filemenu)
+        self.window.config(menu=self.menubar)
+        self.canvas = tk.Canvas(self.window, width=width, height=height, bg="#d9d9d9")
         self.canvas.pack(fill=tk.BOTH, expand=True)
+        self.title = tk.Label(self.window, text=title, font=("Helvetica", 24))
+        self.title.pack(pady=10)
+        self.status = tk.Label(self.window, text="", font=("Helvetica", 16))
+        self.status.pack(pady=10)
         self.canvas.bind("<Configure>", self.createGrid)
-
-        self.status = tk.Label(self.window,font=("Helvetica",16))
-        self.status.pack(side=tk.BOTTOM, pady=10)
-
-        self.menu = tk.Menu(self.window)
-        self.window.config(menu=self.menu)
-
-        self.game_menu = tk.Menu(self.menu, tearoff=False)
-        self.menu.add_cascade(label="Game", menu=self.game_menu)
-        self.game_menu.add_command(label="New Game", command=self.newGame)
-        self.game_menu.add_command(label="Quit", command=self.window.destroy)
-
-        self.player_menu = tk.Menu(self.menu, tearoff=False)
-        self.menu.add_cascade(label="Player", menu=self.player_menu)
-        self.player_menu.add_command(label="Player 1", command = self.setPlayer(1))
-        self.player_menu.add_command(label="Player 2", command = self.setPlayer(2))
-
-        self.current_player = None
+        self.window.withdraw()
 
     def getWindow(self):
         return self.window
@@ -207,6 +222,14 @@ class Go:
         self.game_over = False
         self.board = Board(size)
         self.window = Window(size,windowSize,windowSize,"Go")
+        self.mainMenu = MainMenu(self.window)
+
+        self.mainMenu.filemenu.add_command(label="New Game", command=self.new_game)
+        self.window.filemenu.add_command(label="New Game", command=self.new_game)
+        self.mainMenu.run()
+
+    def new_game(self):
+        pass
 
     def addPlayer(self,player):
         self.players.append(player)
@@ -257,4 +280,4 @@ class Go:
 
 if __name__ == "__main__":
     go = Go(size=9,windowSize=600)
-    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
+    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white"))
