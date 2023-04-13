@@ -2,26 +2,12 @@ import tkinter as tk
 import numpy as np
 
 offset = 20
-x = 0
-y = 0
-is_Humain = True
 
 class Player:
     def __init__(self, name, color):
         self.name = name
         self.color = color
         self.score = 0
-        self.ishumain = is_Humain
-
-class AIPlayer:
-    def __init__(self, name, color):
-        self.name = name
-        self.color = color
-        self.score = 0
-
-    def play(self, board):
-        return 0, 0
-        return x, y
 
 class MainMenu:
     def __init__(self,mainWindow):
@@ -40,8 +26,6 @@ class MainMenu:
         self.start_button = tk.Button(self.window, text="Start Game", command=self.start_game)
         self.start_button.pack()
         self.player_menu = tk.Menu(self.menubar, tearoff=0)
-        self.player_menu.add_command(label="Human", command=self.set_player_type(True))
-        self.player_menu.add_command(label="AI", command=self.set_player_type(False))
         self.menubar.add_cascade(label="Player", menu=self.player_menu)
 
     def start_game(self):
@@ -50,10 +34,6 @@ class MainMenu:
 
     def run(self):
         self.window.mainloop()
-
-
-    def set_player_type(self, is_human):
-        self.mainWindow.getWindow().game_window.set_player_type(is_human)
 
 class Window:
     def __init__(self, size, width, height, title):
@@ -75,10 +55,6 @@ class Window:
         self.title.pack(pady=2)
         self.canvas.bind("<Configure>", self.createGrid)
         self.window.withdraw()
-        
-    def set_player_type(self, is_human):
-        self.player1 = Player("Player 1", "black", is_human=is_human)
-        self.player2 = AIPlayer("AI", "white") if not is_human else Player("Player 2", "white")
 
     def getWindow(self):
         return self.window
