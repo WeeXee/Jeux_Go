@@ -1,60 +1,12 @@
 import tkinter as tk
-import numpy as np
+
 from game.board import Board
 from game.stone import Stone
+from game.window import Window
 from game.player import Player
+from game.window import MainMenu
 
 offset = 20
-
-class Window:
-    def __init__(self, size,width, height,title):
-        self.size = size
-        self.position = np.zeros((size,size),dtype=[('x',int),('y',int)]) # x: vertical | y: horizontal
-
-        self.window = tk.Tk()
-        self.window.title(title)
-
-        self.canvas = tk.Canvas(self.window, width=width, height=height, bg="white")
-        self.canvas.pack(fill=tk.BOTH, expand=True)
-        self.canvas.bind("<Configure>", self.createGrid)
-
-        self.status = tk.Label(self.window,font=("Helvetica",16))
-
-    def getWindow(self):
-        return self.window
-
-    def getCanvas(self):
-        return self.canvas
-    
-    def getGrid(self):
-        return self.position
-    
-    def getGrid(self,x,y):
-        return self.position[x][y]
-    
-    def mainLoop(self):
-        self.window.mainloop()
-
-    def printGrid(self):
-        print(self.position)
-
-    def printGrid(self,x,y):
-        print(self.position[x][y])
-
-    def createGrid(self,event=None):
-        c = self.getCanvas()
-        w = c.winfo_width()
-        h = c.winfo_height()
-        c.delete("grid_line")
-        size = self.size
-        size = size + 1
-
-        for i in range(size):
-            c.create_line([(w/size)*i, (w/size)*1, (w/size)*i, h-(w/size)*1], tag="grid_line")
-            c.create_line([(h/size)*1, (h/size)*i, w-(h/size)*1, (h/size)*i], tag="grid_line")
-        for i in range(size-1):
-            for j in range(size-1):
-                self.position[i][j] = ((w/size)*(i+1)), ((h/size)*(j+1))
 class Go:
     def __init__(self,size,windowSize):
         self.players = []
@@ -62,6 +14,18 @@ class Go:
         self.game_over = False
         self.board = Board(size)
         self.window = Window(size,windowSize,windowSize,"Go")
+        self.mainMenu = MainMenu(self.window)
+        self.mainMenu.filemenu.add_command(label="New Game", command=self.new_game)
+        self.window.filemenu.add_command(label="New Game", command=self.new_game)
+        self.window.buttons.append(tk.Button(text ="Skip Turn", command = self.skipTurn).pack(side = tk.TOP, padx = 10, pady = 5))
+        self.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
+        self.mainMenu.run()
+
+    def skipTurn(self):
+        pass
+
+    def new_game(self):
+        pass
 
     def addPlayer(self,player):
         self.players.append(player)
@@ -103,6 +67,7 @@ class Go:
         return self
 
     def callback(self,event):
+        print(event.x,event.y)
         for x in range(self.board.getSize()):
             for y in range(self.board.getSize()):
                 grid = self.window.getGrid(x,y)
@@ -111,5 +76,5 @@ class Go:
                     return
 
 if __name__ == "__main__":
-    go = Go(size=9,windowSize=800)
-    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
+    go = Go(size=9,windowSize=600)
+    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white"))

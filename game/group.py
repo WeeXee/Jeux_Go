@@ -27,4 +27,3 @@ class Group:
         self.liberties = set(liberties)
         if len(self.liberties) == 0:
             self.remove()
-        return self
