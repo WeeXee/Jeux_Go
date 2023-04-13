@@ -63,6 +63,7 @@ class Go:
         self.game_over = False
         self.board = Board(size)
         self.window = Window(size,windowSize,windowSize,"Go")
+        self.ia = None
 
     def addPlayer(self,player):
         self.players.append(player)
@@ -87,6 +88,8 @@ class Go:
         self.board.updateLiberties(self.board.get(x,y))
         self.drawBoard()
         self.player = self.players[1] if self.player == self.players[0] else self.players[0]
+        print(self.ia.possible_moves)
+        print(self.ia.best_move)
         return self
 
     def drawBoard(self):
@@ -117,3 +120,5 @@ if __name__ == "__main__":
     ia = IA(go.players[0],go.board)
     print(ia.possible_moves)
     print(ia.best_move)
+    go.ia = ia
+    go.start()
