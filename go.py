@@ -3,6 +3,7 @@ import numpy as np
 from game.board import Board
 from game.stone import Stone
 from game.player import Player
+from game.ia import IA
 
 offset = 20
 
@@ -112,4 +113,7 @@ class Go:
 
 if __name__ == "__main__":
     go = Go(size=9,windowSize=800)
-    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
+    go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white"))
+    ia = IA(go.players[0],go.board)
+    print(ia.possible_moves)
+    print(ia.best_move)
