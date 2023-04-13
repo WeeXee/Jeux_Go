@@ -20,6 +20,7 @@ class AIPlayer:
         self.score = 0
 
     def play(self, board):
+        return 0, 0
         return x, y
 
 class MainMenu:
