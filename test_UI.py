@@ -100,8 +100,6 @@ class Window:
         self.current_player = None
         self.status.config(text="")
         self.createGrid()
-        self.set_player_type(self.player1.is_human)  # Set player type for new game
-        self.current_player = self.player1  # Set current player to Player 1
         for button in self.buttons:
             button.config(command=lambda button=button: self.takeTurn(button))
             self.status.config(text="Player {}'s turn".format(self.current_player.name))
