@@ -2,12 +2,25 @@ import tkinter as tk
 import numpy as np
 
 offset = 20
+x = 0
+y = 0
+is_Humain = True
 
 class Player:
     def __init__(self, name, color):
         self.name = name
         self.color = color
         self.score = 0
+        self.ishumain = is_Humain
+
+class AIPlayer:
+    def __init__(self, name, color):
+        self.name = name
+        self.color = color
+        self.score = 0
+
+    def play(self, board):
+        return x, y
 
 class MainMenu:
     def __init__(self,mainWindow):
@@ -25,12 +38,21 @@ class MainMenu:
         self.title.pack(pady=10)
         self.start_button = tk.Button(self.window, text="Start Game", command=self.start_game)
         self.start_button.pack()
+        self.player_menu = tk.Menu(self.menubar, tearoff=0)
+        self.player_menu.add_command(label="Human", command=self.set_player_type(True))
+        self.player_menu.add_command(label="AI", command=self.set_player_type(False))
+        self.menubar.add_cascade(label="Player", menu=self.player_menu)
 
     def start_game(self):
         self.mainWindow.getWindow().deiconify()
 
+
     def run(self):
         self.window.mainloop()
+
+
+    def set_player_type(self, is_human):
+        self.mainWindow.getWindow().game_window.set_player_type(is_human)
 
 class Window:
     def __init__(self, size, width, height, title):
@@ -40,6 +62,7 @@ class Window:
         self.window.title(title)
         self.menubar = tk.Menu(self.window)
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
+        self.buttons = []
 
         self.filemenu.add_command(label="Quit", command=self.window.quit)
         self.menubar.add_cascade(label="Options", menu=self.filemenu)
@@ -48,11 +71,13 @@ class Window:
         self.canvas = tk.Canvas(self.window, width=width, height=height, bg="#d9d9d9")
         self.canvas.pack(fill=tk.BOTH, expand=True)
         self.title = tk.Label(self.window, text=title, font=("Helvetica", 24))
-        self.title.pack(pady=10)
-        self.status = tk.Label(self.window, text="", font=("Helvetica", 16))
-        self.status.pack(pady=10)
+        self.title.pack(pady=2)
         self.canvas.bind("<Configure>", self.createGrid)
         self.window.withdraw()
+        
+    def set_player_type(self, is_human):
+        self.player1 = Player("Player 1", "black", is_human=is_human)
+        self.player2 = AIPlayer("AI", "white") if not is_human else Player("Player 2", "white")
 
     def getWindow(self):
         return self.window
@@ -90,14 +115,39 @@ class Window:
             for j in range(size-1):
                 self.position[i][j] = ((w/size)*(i+1)), ((h/size)*(j+1))
 
+    def setPlayer(self, player):
+        self.current_player = player
+        self.status.config(text="Player {} selected".format(player))
+
     def newGame(self):
         self.current_player = None
         self.status.config(text="")
         self.createGrid()
+        self.set_player_type(self.player1.is_human)  # Set player type for new game
+        self.current_player = self.player1  # Set current player to Player 1
+        for button in self.buttons:
+            button.config(command=lambda button=button: self.takeTurn(button))
+            self.status.config(text="Player {}'s turn".format(self.current_player.name))
 
-    def setPlayer(self, player):
-        self.current_player = player
-        self.status.config(text="Player {} selected".format(player))
+    def takeTurn(self, button):
+        if button["text"] == "":
+            button["text"] = self.current_player.color
+            x, y = self.getButtonPosition(button)
+            self.board.play(self.current_player, x, y)
+
+            if self.board.checkWin(x, y):
+                self.status.config(text="Player {} wins!".format(self.current_player.name))
+                for button in self.buttons:
+                    button.config(state=tk.DISABLED)
+            else:
+                self.current_player = self.player2 if self.current_player == self.player1 else self.player1
+                if self.current_player.is_human:
+                    self.status.config(text="Player {}'s turn".format(self.current_player.name))
+                else:
+                    x, y = self.current_player.play(self.board)
+                    button = self.buttons[x + y * self.size]
+                    self.takeTurn(button)
+
 
 class Stone:
     def __init__(self, board ,player, x,y):
@@ -223,10 +273,14 @@ class Go:
         self.board = Board(size)
         self.window = Window(size,windowSize,windowSize,"Go")
         self.mainMenu = MainMenu(self.window)
-
         self.mainMenu.filemenu.add_command(label="New Game", command=self.new_game)
         self.window.filemenu.add_command(label="New Game", command=self.new_game)
+        self.window.buttons.append(tk.Button(text ="Skip Turn", command = self.skipTurn).pack(side = tk.TOP, padx = 10, pady = 5))
+        self.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
         self.mainMenu.run()
+
+    def skipTurn(self):
+        pass
 
     def new_game(self):
         pass
@@ -271,6 +325,7 @@ class Go:
         return self
 
     def callback(self,event):
+        print(event.x,event.y)
         for x in range(self.board.getSize()):
             for y in range(self.board.getSize()):
                 grid = self.window.getGrid(x,y)
