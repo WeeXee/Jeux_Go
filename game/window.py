@@ -7,11 +7,8 @@ class MainMenu:
         self.window.title("Main Menu")
         self.menubar = tk.Menu(self.window)
         self.mainWindow = mainWindow
-
         self.filemenu = tk.Menu(self.menubar, tearoff=0)
         self.filemenu.add_command(label="Quit", command=self.window.quit)
-        self.menubar.add_cascade(label="File", menu=self.filemenu)
-
         self.window.config(menu=self.menubar)
         self.title = tk.Label(self.window, text="Main Menu", font=("Helvetica", 24))
         self.title.pack(pady=10)
@@ -22,6 +19,7 @@ class MainMenu:
 
     def start_game(self):
         self.mainWindow.getWindow().deiconify()
+        self.window.destroy()
 
 
     def run(self):
@@ -39,7 +37,6 @@ class Window:
 
         self.filemenu.add_command(label="Quit", command=self.window.quit)
         self.menubar.add_cascade(label="Options", menu=self.filemenu)
-        self.menubar.add_cascade(label="Player", menu=self.filemenu)
         self.window.config(menu=self.menubar)
         self.canvas = tk.Canvas(self.window, width=width, height=height, bg="#d9d9d9")
         self.canvas.pack(fill=tk.BOTH, expand=True)

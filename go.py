@@ -15,17 +15,19 @@ class Go:
         self.board = Board(size)
         self.window = Window(size,windowSize,windowSize,"Go")
         self.mainMenu = MainMenu(self.window)
-        self.mainMenu.filemenu.add_command(label="New Game", command=self.new_game)
         self.window.filemenu.add_command(label="New Game", command=self.new_game)
         self.window.buttons.append(tk.Button(text ="Skip Turn", command = self.skipTurn).pack(side = tk.TOP, padx = 10, pady = 5))
         self.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white")).start()
         self.mainMenu.run()
 
     def skipTurn(self):
-        pass
+        self.player = self.players[1] if self.player == self.players[0] else self.players[0]
+        
 
     def new_game(self):
-        pass
+        self.window.getWindow().deiconify()
+        self.board = Board(self.board.getSize())
+        self.drawBoard()
 
     def addPlayer(self,player):
         self.players.append(player)
