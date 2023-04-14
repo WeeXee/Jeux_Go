@@ -90,6 +90,9 @@ class Go:
         self.player = self.players[1] if self.player == self.players[0] else self.players[0]
         print(self.ia.possible_moves)
         print(self.ia.best_move)
+        if self.player == self.ia.player:
+            x,y = self.ia.best_move
+            self.round(x,y)
         return self
 
     def drawBoard(self):
@@ -117,7 +120,7 @@ class Go:
 if __name__ == "__main__":
     go = Go(size=9,windowSize=800)
     go.addPlayer(Player("Player 1","black")).addPlayer(Player("Player 2","white"))
-    ia = IA(go.players[0],go.board)
+    ia = IA(go.players[1],go.board)
     print(ia.possible_moves)
     print(ia.best_move)
     go.ia = ia

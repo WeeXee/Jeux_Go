@@ -19,10 +19,7 @@ def evaluate_move(move):
     # en fonction des coups suivants menant à une victoire ou une défaite.
     # Pour cet exemple, nous attribuerons une valeur aléatoire pour illustrer le concept.
     return np.random.randint(-10, 10)
-complete la fontion evaluate_move, en ajoutant et retirant des point en fonction de la statégie de jeu suivante:
-1 si il n'y a aucun pion au centre (5X5) ajouté 10 point au case du centre
-2 si l'adversaire a des jetons alignés, baisser de 10 le coup des case adjacente
-3 si vous avez des pions posé, le coup des cases adjencente augmente de 10
+
 # Créer une fonction pour choisir le meilleur coup
 def choose_best_move(possible_moves):
     best_move = None
